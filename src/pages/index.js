@@ -4,6 +4,8 @@ function Index() {
   const [showForm, setShowForm] = useState(true);
   const [longUrl, setLongUrl] = useState("");
   const [shortUrl, setShortUrl] = useState("");
+  const [showError, setShowError] = useState(false)
+  const [errorMessage, setErrorMessage] = useState("")
 
   function handleChange(event) {
     setLongUrl(event.target.value);
@@ -18,15 +20,23 @@ function Index() {
         "Content-Type": "application/json",
       },
     });
-    const data = await res.json();
 
-    setShowForm(false);
-    setLongUrl("");
-    setShortUrl(data.shortUrl);
+    if (res.ok) {
+      const data = await res.json();
+      setShowForm(false);
+      setLongUrl("");
+      setShortUrl(data.shortUrl);
+    } else {
+      setShowError(true);
+      const error = await res.json()
+      setErrorMessage(error.errorMessage)
+      console.log(error.errorMessage)
+    }
   }
   return (
     <>
       {showForm ? (
+        <>
         <form onSubmit={handleSubmit}>
           <label>
             Url:
@@ -40,6 +50,8 @@ function Index() {
           </label>
           <input type="submit" value="Submit" />
         </form>
+        {showError && <p>400 error</p>}
+        </>
       ) : (
         <div>{shortUrl}</div>
       )}
